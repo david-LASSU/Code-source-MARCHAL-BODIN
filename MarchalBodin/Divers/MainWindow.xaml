@@ -1,0 +1,259 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:toolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"
+        xmlns:local="clr-namespace:Divers" x:Class="Divers.MainWindow"
+        mc:Ignorable="d ignore"
+        Height="600"
+        Width="700"
+        xml:lang="fr-FR"
+        Title="{Binding Title}"
+        >
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.DataContext>
+        <Binding Path="Main" Source="{StaticResource Locator}"/>
+    </Window.DataContext>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="521*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" xml:space="preserve">  Seuls VDE, VBC, APC, ABC peuvent être enregistrés.
+  Si une ligne comporte des erreurs, elle sera tout simplement ignorée.
+  Si le document est un relicat vous ne pourrez pas l'enregistrer.
+  Si la contremarque d'une ligne est un relicat, elle ne sera pas enregistrée.
+        </TextBlock>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button Margin="5" Command="{Binding SaveCommand}" IsEnabled="{Binding CanSaveDoc}">Enregistrer</Button>
+            <Button Margin="5" Click="CloseApp">Fermer</Button>
+            <Button Margin="5" Command="{Binding AddCommand}" IsEnabled="{Binding CanSaveDoc}">Ajouter</Button>
+            <Label Content="Seuls VDE, VBC, APC, ABC et non relicats peuvent être enregistrés." Foreground="Red" Margin="5">
+                <Label.Style>
+                    <Style TargetType="Label">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CanSaveDoc}" Value="False">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CanSaveDoc}" Value="True">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Label.Style>
+            </Label>
+        </StackPanel>
+        <ScrollViewer Grid.Row="2" x:Name="ScrollGrd">
+            <DataGrid x:Name="GrdLignes"
+                  ItemsSource="{Binding Document.Lignes, ValidatesOnDataErrors=True}" 
+                  CanUserDeleteRows="False" 
+                  CanUserResizeRows="False" 
+                  CanUserAddRows="False"
+                  AutoGenerateColumns="False"
+                  RowHeaderWidth="30"
+                  RowHeight="30"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  SelectedItem="{Binding SelectedLigne, UpdateSourceTrigger=PropertyChanged}"
+                  CellStyle="{StaticResource Body_Content_DataGrid_Centering}" 
+                  RowDetailsVisibilityMode="Collapsed"
+                  MouseLeftButtonUp="GrdLignes_MouseLeftButtonUp">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="AliceBlue"/>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="#" Width="30">
+                    <DataGridTemplateColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsValid}" Value="True">
+                                    <Setter Property="Background" Value="YellowGreen"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=IsValid}" Value="False">
+                                    <Setter Property="Background" Value="Red"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTemplateColumn.CellStyle>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Ref Mag" Binding="{Binding ArRef}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur.Intitule}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Ref Fourn" Binding="{Binding Path=RefFourn}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Designation" Binding="{Binding Designation}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N2}" IsReadOnly="True" />
+                <DataGridTextColumn Header="PU Net Ach" Binding="{Binding PxNetAch, StringFormat=C}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=C}" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="#">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Margin="5,0,5,0" CommandParameter="{Binding}" Command="{Binding Main.RemoveCommand, Mode=OneWay, Source={StaticResource Locator}}" IsEnabled="{Binding IsNew}">Supprimer</Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="#" Binding="{Binding SaveResult}" IsReadOnly="True"/>
+            </DataGrid.Columns>
+            <!--ROW DETAILS-->
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Grid Width="600" Background="White" x:Name="RowDetails">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,10,0,10">
+                            <Label Content="Désignation :"/>
+                            <TextBox Text="{Binding Designation, UpdateSourceTrigger=PropertyChanged}" MaxLength="69" Width="275" Style="{StaticResource ErrorStyle}"/>
+                            <Label Content="Quantité :"/>
+                            <TextBox Text="{Binding Quantite, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}" Style="{StaticResource ErrorStyle}"/>
+                            <Label Content="Unité :"/>
+                            <ComboBox 
+                                ItemsSource="{Binding Main.Unites, Source={StaticResource Locator}}"
+                                SelectedItem="{Binding Unite, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                Width="80"/>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="300"/>
+                                <ColumnDefinition Width="300"/>
+                            </Grid.ColumnDefinitions>
+                            <GroupBox Header="Achat" Grid.Column="0" Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="12*"/>
+                                        <ColumnDefinition Width="24*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="26*"/>
+                                        <RowDefinition Height="70*"/>
+                                    </Grid.RowDefinitions>
+                                    <Label Content="Fournisseur :" Grid.Row="0" Grid.Column="0"/>
+                                    <toolkit:AutoCompleteBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        ItemsSource="{Binding Main.Fournisseurs, Source={StaticResource Locator}}"
+                                        SelectedItem="{Binding Path=Fournisseur, Mode=TwoWay, UpdateSourceTrigger=LostFocus, ValidatesOnDataErrors=True}"
+                                        ValueMemberPath="ConcatName"
+                                        FilterMode="Contains"
+                                        IsEnabled="{Binding Path=FournisseurEnabled}"
+                                        Margin="5"
+                                        Style="{StaticResource ErrorStyle}"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Content="Ref Fourn :"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=RefFourn, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True}" MaxLength="19"/>
+                                    <Label Grid.Row="2" Grid.Column="0" Content="Prix de base :"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=PxBaseAch, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}"/>
+                                    <Label Grid.Row="3" Grid.Column="0" Content="Remise :"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Path=RemiseAch, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}"/>
+                                    <Label Grid.Row="4" Grid.Column="0" Content="Prix net :"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Path=PxNetAch, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}" IsEnabled="{Binding IsPxNetEnabled}"/>
+                                    <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Right" IsChecked="{Binding DesMajDocVen, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">Ne pas mettre à jour le doc vente</CheckBox>
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox Header="Vente" Grid.Column="1" Style="{StaticResource GroupBoxStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="5*"/>
+                                        <ColumnDefinition Width="5*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Content="Coef sur prix de base :"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Path=CoefBase, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}" IsEnabled="{Binding IsCoefBaseEnabled}"/>
+                                    <Label Grid.Row="1" Grid.Column="0" Content="Coef sur prix net :"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Path=CoefNet, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}" IsEnabled="{Binding IsCoefNetEnabled}"/>
+                                    <Label Grid.Row="2" Grid.Column="0">Remise Client (%) :</Label>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=RemiseVen, StringFormat=N2, UpdateSourceTrigger=LostFocus, Mode=TwoWay, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}"/>
+                                    <TabControl Grid.Row="3" Grid.ColumnSpan="2">
+                                        <TabItem Header="HT" Selector.IsSelected="True" Style="{StaticResource TabCtrlStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Row="0" Grid.Column="0" Content="P.U. :"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=PxUVen, StringFormat=C}"/>
+                                                <Label Grid.Row="1" Grid.Column="0" Content="Remise :"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=MontantRemise, StringFormat=C}"/>
+                                                <Label Grid.Row="2" Grid.Column="0" Content="P.U. net :"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=PxUVenNet, StringFormat=C}"/>
+                                                <Label Grid.Row="3" Grid.Column="0" FontWeight="Bold" Content="Montant :"/>
+                                                <TextBlock Grid.Row="3" Grid.Column="1" FontWeight="Bold" Text="{Binding Path=Total, StringFormat=C}"/>
+                                            </Grid>
+                                        </TabItem>
+                                        <TabItem Header="TTC" Style="{StaticResource TabCtrlStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                    <RowDefinition Height="26*"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition/>
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Row="0" Grid.Column="0" Content="P.U. :"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=PxUVenTTC, StringFormat=C}"/>
+                                                <Label Grid.Row="1" Grid.Column="0" Content="Remise :"/>
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=MontantRemiseTTC, StringFormat=C}"/>
+                                                <Label Grid.Row="2" Grid.Column="0" Content="P.U. net :"/>
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=PxUVenNetTTC, StringFormat=C}"/>
+                                                <Label Grid.Row="3" Grid.Column="0" FontWeight="Bold" Content="Montant :"/>
+                                                <TextBlock Grid.Row="3" Grid.Column="1" FontWeight="Bold" Text="{Binding Path=TotalTTC, StringFormat=C}"/>
+                                            </Grid>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox Header="Commentaire" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                                <Grid>
+                                    <TextBox x:Name="Commentaire" Grid.Row="3" Text="{Binding Path=Commentaire, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" HorizontalAlignment="Stretch" Height="100" TextWrapping="WrapWithOverflow"/>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
+        </ScrollViewer>
+        
+    </Grid>
+</Window>

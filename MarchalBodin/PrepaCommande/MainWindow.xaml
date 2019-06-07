@@ -1,0 +1,142 @@
+﻿<Window x:Class="PrepaCommande.MainWindow" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:local="clr-namespace:PrepaCommande"
+        xmlns:keyboard="clr-namespace:OnScreenKeyboardControl.Keyboard;assembly=OnScreenKeyboardControl"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d ignore"
+        Height="600"
+        Width="978"
+        Title="{Binding WelcomeTitle}"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        xml:lang="fr-FR"
+        FontSize="14">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <xctk:BusyIndicator IsBusy="{Binding IsWaiting}" BusyContent="Import en cours, veuillez patienter ...">
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="300"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+            <!--<Button Style="{StaticResource ButtonStyle}" Command="{Binding SaveCommand}">Enregitrer</Button>-->
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding CloseCommand}">Fermer</Button>
+            <TextBlock Text="Ref / Code barre:" VerticalAlignment="Center"/>
+            <TextBox x:Name="TxtCodeBarre"
+                        Text="{Binding CodeBarre}" 
+                        VerticalAlignment="Center" 
+                        Width="150"
+                        Height="40"
+                        Margin="5 0"
+                        local:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding CodeBarreKeyDownCommand}" CommandParameter="{Binding ElementName=GrdLignes}"/>
+                    <KeyBinding Key="Enter" Command="{Binding CodeBarreKeyDownCommand}" CommandParameter="{Binding ElementName=GrdLignes}"/>
+                    <KeyBinding Key="Tab" Command="{Binding CodeBarreKeyDownCommand}" CommandParameter="{Binding ElementName=GrdLignes}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="0">Effacer</Button>
+            <Button Command="{Binding SelectionCommandClick}" CommandParameter="7" Background="Khaki" Width="50" Margin="5" ToolTip="Articles non suivis en stock">
+                <TextBlock Style="{StaticResource RowState0TxtStyle}" Text="{Binding NbRowState0}"></TextBlock>
+            </Button>
+            <Button Command="{Binding SelectionCommandClick}" CommandParameter="8" Background="Tomato" Width="50" Margin="5" ToolTip="Articles suivis en stock sans quantité saisie">
+                <TextBlock Style="{StaticResource RowState1TxtStyle}" Text="{Binding NbRowState1}"></TextBlock>
+            </Button>
+            <Button Command="{Binding SelectionCommandClick}" CommandParameter="9" Background="PaleGreen" Width="50" Margin="5" ToolTip="Articles suivis en stock avec quantité saisie">
+                <TextBlock Style="{StaticResource RowState2TxtStyle}" Text="{Binding NbRowState2}"></TextBlock>
+            </Button>
+            <TextBlock Text="Franco :"  Height="20" Padding="2"/>
+            <TextBlock Text="{Binding Commande.Franco}"  Height="20" Padding="2"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Appliquer sur la sélection:</TextBlock>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="1">Colisage</Button>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="2">Qec</Button>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="3">Stock Min</Button>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="4">Stock Max</Button>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="5">Zero</Button>
+            <TextBlock VerticalAlignment="Center">Quantité :</TextBlock>
+            <TextBox x:Name="GlobalQt" Width="50" Margin="5" VerticalAlignment="Center" Text="{Binding GlobQt}" Height="40" IsEnabled="False"/>
+            <Button Style="{StaticResource ButtonStyle}" Command="{Binding SelectionCommandClick}" CommandParameter="6">OK</Button>
+            <TextBlock VerticalAlignment="Center" FontWeight="Bold">Total : </TextBlock>
+            <TextBlock VerticalAlignment="Center" FontWeight="Bold" Margin="2 0 0 0" Text="{Binding Commande.Total, StringFormat='C'}"/>
+        </StackPanel>
+        <DataGrid Grid.Row="2"
+                    x:Name="GrdLignes"
+                    ItemsSource="{Binding Commande.Lignes}"
+                    AutoGenerateColumns="False"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    SelectedItem="{Binding SelectedItem}"
+                    RowHeight="50"
+                    ColumnHeaderHeight="50"
+                    RowStyle="{StaticResource RowStyle}"
+                    PreparingCellForEdit="GrdLignes_PreparingCellForEdit"
+                    CellEditEnding="GrdLignes_CellEditEnding"
+                    KeyDown="GrdLignes_KeyDown"
+                    >
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding SelectionChangedCommand}" 
+                        CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}}" />
+                </i:EventTrigger>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:InvokeCommandAction Command="{Binding DoubleClickCommand}"
+                        CommandParameter="{Binding CurrentCell, RelativeSource={RelativeSource FindAncestor, AncestorType=DataGrid}}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="#" CellStyle="{StaticResource ColorCellStyle}" Binding="{Binding Path=RowState, StringFormat=\\}" Width="40"/>
+                <DataGridTextColumn Header="Ref Mag" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Ref}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Quantité" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Qte, UpdateSourceTrigger=LostFocus, StringFormat=\{0:F\}, TargetNullValue=''}"/>
+                <DataGridTextColumn Header="Ref Fourn" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=RefFourn}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Désignation" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Designation}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="G1" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Gamme1}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="G2" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Gamme2}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="UA" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=UniteAchat}" IsReadOnly="True"/>
+                <!-- Info: StringFormat=0.00;;# permet d'afficher vide si = 0 -->
+                <DataGridTextColumn Header="Stat" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Stat, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Stock" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Stock, UpdateSourceTrigger=LostFocus, StringFormat=\{0:F\}, TargetNullValue=''}"/>
+                <DataGridTextColumn Header="Commandé" CellStyle="{StaticResource CellStyle}" FontWeight="Bold" Binding="{Binding Path=QteCom, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Réservé" CellStyle="{StaticResource CellStyle}" FontWeight="Bold" Binding="{Binding Path=QteRes, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="A terme" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=StockAterme, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Px U" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=ArPrixAch, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Total" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Total, StringFormat=0.00;;#}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="UV" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=UniteVente}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Colisage" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Colisage, StringFormat=\{0:F\}}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="QEC" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Qec, StringFormat=\{0:F\}}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Stock Min" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=StockMin, StringFormat=\{0:F\}}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Stock Max" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=StockMax, StringFormat=\{0:F\}}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Emplacement" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Emplacement}" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <GridSplitter Grid.Row="3" Height="5" HorizontalAlignment="Stretch"/>
+        <keyboard:MBScreenKeyboard
+                x:Name="vkeyboard"
+                Grid.Row="4"
+                VerticalAlignment="Stretch" 
+                ActiveContainer="{Binding ElementName=LayoutRoot}"/>
+    </Grid >
+    </xctk:BusyIndicator>
+</Window>

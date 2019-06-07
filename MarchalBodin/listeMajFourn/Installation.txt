@@ -1,0 +1,8 @@
+Affiche la liste des fournisseurs ainsi que leur status de mise à jour
+Les champs libres DATE_MAJ_TARIF & MAJ_URGENTE doivent exister
+
+Intitulé : Liste Maj Fourn
+Contexte : Global
+Type : Exécutable
+Ligne de commande : S:\Programmes externes\listeMajFourn\listeMajFourn.exe
+Arguments : "$(Dossier.LocalisationCommercial)"

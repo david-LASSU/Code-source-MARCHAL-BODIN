@@ -1,0 +1,3 @@
+﻿<DnaLibrary Name="MajFournDNA" RuntimeVersion="v4.0">
+  <ExternalLibrary Path="MajFournDNA.dll" ComServer="true" />
+</DnaLibrary>

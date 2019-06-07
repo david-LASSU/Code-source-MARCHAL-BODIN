@@ -1,0 +1,102 @@
+﻿<Window x:Class="Logistique.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:local="clr-namespace:Logistique"
+        xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.Platform"
+        mc:Ignorable="d ignore"
+        Height="396"
+        Width="869"
+        Title="{Binding WelcomeTitle}"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        FontSize="14">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Skins/MainSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="CellStyle" TargetType="{x:Type DataGridCell}">
+
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadedCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel 
+            Grid.Row="0" 
+            Orientation="Horizontal" 
+            HorizontalAlignment="Left">
+            <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Emplacement :</TextBlock>
+            <TextBox x:Name="GencodEmpl" 
+                     Text="{Binding GencodEmplStr}"
+                     VerticalAlignment="Center" 
+                     Margin="6,0,0,0" 
+                     Width="117" 
+                     local:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding GencodEmplKeyDownCommand}"/>
+                    <KeyBinding Key="Enter" Command="{Binding GencodEmplKeyDownCommand}"/>
+                    <KeyBinding Key="Tab" Command="{Binding GencodEmplKeyDownCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Margin="5,0,0,0" Command="{Binding ClearGencodEmplCommand}">Effacer</Button>
+            <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Ajouter article :</TextBlock>
+            <TextBox 
+                IsEnabled="{Binding GencodArtEnabled}"
+                x:Name="GencodArt" 
+                Text="{Binding GencodArtStr}"
+                VerticalAlignment="Center" 
+                Margin="6,0,0,0"
+                Width="117" 
+                local:InputBindingsManager.UpdatePropertySourceWhenEnterPressed="TextBox.Text">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding GencodArtKeyDownCommand}"/>
+                    <KeyBinding Key="Enter" Command="{Binding GencodArtKeyDownCommand}"/>
+                    <KeyBinding Key="Tab" Command="{Binding GencodArtKeyDownCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+        </StackPanel>
+        <DataGrid Grid.Row="1"
+                  x:Name="GrdLignes"
+                  ItemsSource="{Binding Articles}"
+                  AutoGenerateColumns="False"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Extended"
+                  SelectedItem="{Binding SelectedArticle}">
+            <DataGrid.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="GreenYellow"/>
+            </DataGrid.Resources>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="CellEditEnding">
+                    <cmd:EventToCommand PassEventArgsToCommand="True" Command="{Binding CellEditEndingCommand}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DataGrid.InputBindings>
+
+            </DataGrid.InputBindings>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ref Mag" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Ref}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Désignation" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Designation}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Gamme 1" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Gamme1}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Gamme 2" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Gamme2}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Stock Réel" CellStyle="{StaticResource CellStyle}" Binding="{Binding Path=Stock, StringFormat=\{0:F\}}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

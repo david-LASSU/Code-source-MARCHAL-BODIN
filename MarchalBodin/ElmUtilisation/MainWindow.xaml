@@ -1,0 +1,23 @@
+﻿<Window x:Class="ElmUtilisation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ElmUtilisation"
+        mc:Ignorable="d"
+        DataContext="{StaticResource MainViewModel}"
+        Title="Eléments en cours d'utilisation" Height="350" Width="679" FontSize="15">
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+            <DataGrid x:Name="LockLogGrid" ItemsSource="{Binding LockLogs}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding CallTime, StringFormat=\{0:dd.MM.yyyy hh:mm:ss\}}"/>
+                    <DataGridTextColumn Header="Utilisateur Windows" Binding="{Binding CallingUser}"/>
+                    <DataGridTextColumn Header="Machine" Binding="{Binding CallingMachine}"/>
+                    <DataGridTextColumn Header="Elément" Binding="{Binding Objet}"/>
+                    <DataGridTextColumn Header="Référence" Binding="{Binding Ref}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
+    </Grid>
+</Window>

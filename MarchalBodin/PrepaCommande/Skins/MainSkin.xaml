@@ -1,0 +1,69 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:PrepaCommande">
+    <Style x:Key="RowStyle" TargetType="{x:Type DataGridRow}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RowHidden, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="CellStyle" TargetType="{x:Type DataGridCell}">
+        <!-- Base style for all cells -->
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Disabled}" Value="true">
+                <Setter Property="FontStyle" Value="Italic"/>
+                <Setter Property="Foreground" Value="Gray"/>
+            </DataTrigger>
+        </Style.Triggers>
+        <!--body content datagrid cell vertical centering-->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type DataGridCell}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ColorCellStyle" BasedOn="{StaticResource CellStyle}" TargetType="{x:Type DataGridCell}">
+        <!-- Base style for # column -->
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RowState}" Value="0">
+                <Setter Property="Background" Value="Khaki"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RowState}" Value="1">
+                <Setter Property="Background" Value="Tomato"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RowState}" Value="2">
+                <Setter Property="Background" Value="PaleGreen"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="ButtonStyle" TargetType="Button">
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="Padding" Value="10" />
+    </Style>
+    <Style x:Key="RowState0TxtStyle" TargetType="TextBlock">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HideRowState0}" Value="true">
+                <Setter Property="TextDecorations" Value="Strikethrough"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="RowState1TxtStyle" TargetType="TextBlock">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HideRowState1}" Value="true">
+                <Setter Property="TextDecorations" Value="Strikethrough"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="RowState2TxtStyle" TargetType="TextBlock">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HideRowState2}" Value="true">
+                <Setter Property="TextDecorations" Value="Strikethrough"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,17 @@
+﻿<Window x:Class="VerrouillageDoc.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VerrouillageDoc"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="156" Width="294" FontSize="14">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="11*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" x:Name="StatutLabel" Background="Red" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="20">Message à définir</Label>
+        <Button Grid.Row="1" x:Name="StatutBtn" Click="Button_Click">Verrouiler/Déverrouiller</Button>
+    </Grid>
+</Window>

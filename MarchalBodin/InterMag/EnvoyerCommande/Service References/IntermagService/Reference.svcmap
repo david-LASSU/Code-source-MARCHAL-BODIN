@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="a56217fe-4ecd-4293-bfd6-a8401b771319" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:8001/IntermagService" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="IntermagService.wsdl" MetadataType="Wsdl" ID="7e706ede-ae7d-444f-b420-82b6d1f1fd7f" SourceId="1" SourceUrl="http://emmanuel-pc:8001/InterMagService?wsdl" />
+    <MetadataFile FileName="InterMagService.xsd" MetadataType="Schema" ID="34fabc5a-5a1f-4f9a-9af7-06dbf2c9ff90" SourceId="1" SourceUrl="http://emmanuel-pc:8001/InterMagService?xsd=xsd0" />
+    <MetadataFile FileName="InterMagService.disco" MetadataType="Disco" ID="fac91c12-cc04-4a85-8f9a-33787b87df5a" SourceId="1" SourceUrl="http://emmanuel-pc:8001/InterMagService?disco" />
+    <MetadataFile FileName="InterMagService1.xsd" MetadataType="Schema" ID="c6858a1a-0e00-45e1-9990-d44bcc397205" SourceId="1" SourceUrl="http://emmanuel-pc:8001/InterMagService?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

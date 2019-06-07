@@ -1,0 +1,45 @@
+﻿<Window x:Class="DeconnexionUtilisateur.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DeconnexionUtilisateur"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="839" DataContext="{StaticResource MainViewModel}" FontSize="14">
+    <Window.Resources>
+        <Style x:Key="CellStyle" TargetType="{x:Type DataGridCell}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Disconnected}" Value="true">
+                    <Setter Property="Background" Value="Gray" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Background="{Binding BgMessage}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="50">
+            <TextBlock Text="{Binding Message}" TextAlignment="Center" Margin="0,15,0,15"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="24">
+            <TextBlock Margin="10,0,0,0">Base :</TextBlock>
+            <ComboBox SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" ItemsSource="{Binding Dbs}" Margin="5,0,0,0" DisplayMemberPath="name" SelectedValuePath="name" IsEditable="False" IsReadOnly="True" Text="Choisir ..."/>
+            <Button Command="{Binding CommandRafraichir}" Margin="15,0,0,0">Rafraîchir</Button>
+            <Button x:Name="DecoBtn" Margin="50,0,0,0" Click="DecoBtn_Click" IsEnabled="{Binding CanDisconnect}">Déconnecter la sélection</Button>
+            <Button Command="{Binding CommandGhost}" Margin="15,0,0,0">Sessions fantômes</Button>
+        </StackPanel>
+        <DataGrid Grid.Row="2" 
+                  x:Name="UsersGrid"
+                  HorizontalAlignment="Stretch" 
+                  VerticalAlignment="Stretch" 
+                  ItemsSource="{Binding Users}" 
+                  SelectionUnit="FullRow" 
+                  AutoGenerateColumns="True" 
+                  IsReadOnly="True"
+                  SelectionMode="Extended">
+        </DataGrid>
+    </Grid>
+</Window>

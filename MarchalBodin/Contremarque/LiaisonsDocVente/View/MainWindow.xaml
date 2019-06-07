@@ -1,0 +1,163 @@
+﻿<Window x:Class="LiaisonsDocVente.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LiaisonsDocVente"
+        xmlns:model="clr-namespace:LiaisonsDocVente.Model"
+        xmlns:view="clr-namespace:LiaisonsDocVente.View"
+        xmlns:MBConverter="clr-namespace:MBCore.Converter;assembly=MBCore"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="350" Width="1204.409"
+        DataContext="{StaticResource MainViewModel}"
+        FontSize="15" 
+        xml:lang="fr-FR">
+    <Window.Resources> 
+        <MBConverter:DecimalConverter x:Key="DecimalConverter"/>
+        <Style x:Key="CellStyle" TargetType="{x:Type DataGridCell}">
+            <Setter Property="IsEnabled" Value="{Binding IsNotArticleDivers}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true">
+                    <Setter Property="Background" Value="LemonChiffon"/>
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true"/>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Foreground" Value="Black"/>
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="QteStyle" BasedOn="{StaticResource CellStyle}" TargetType="{x:Type DataGridCell}">
+            <Setter Property="IsEnabled" Value="{Binding IsQteEditable}"/>
+        </Style>
+        <Style x:Key="QteStockStyle" BasedOn="{StaticResource CellStyle}" TargetType="{x:Type DataGridCell}">
+            <Setter Property="IsEnabled" Value="{Binding IsQteStockEditable, UpdateSourceTrigger=PropertyChanged}"/>
+        </Style>
+        <Style x:Key="FournPrincStyle" BasedOn="{StaticResource CellStyle}" TargetType="{x:Type DataGridCell}">
+            <Setter Property="IsEnabled" Value="{Binding IsFournPrincEditable}"/>
+        </Style>
+        <Style x:Key="CellEditStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="true">
+                    <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <ScrollViewer x:Name="MainScroll" HorizontalScrollBarVisibility="Auto" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+        <Grid x:Name="MainGrid" IsEnabled="{Binding MainGridEnabled}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="11*"/>
+                    <RowDefinition Height="9*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Vertical" Grid.Row="0">
+                    <TextBlock Foreground="DarkSeaGreen">Seules les cellules sur fond jaune peuvent être modifiées.</TextBlock>
+                    <TextBlock Foreground="Red" x:Name="messageBox" Text="{Binding Message, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
+                    <CheckBox Margin="5" IsChecked="{Binding DisableIntermag}" IsEnabled="{Binding DisableIntermagEnabled, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock>Désactiver l'envoi des commandes intermag</TextBlock>
+                    <TextBlock Margin="50 0 5 0">Fournisseur pour les lignes sélectionnées :</TextBlock>
+                    <ComboBox x:Name="FournListComboBox" Width="120" ItemsSource="{Binding FournList}" SelectedItem="{Binding SelectedFourn}"/>
+                    <Button x:Name="ValiderFournList" Click="ValiderFournList_Click" Margin="5 0 0 0">OK</Button>
+                </StackPanel>
+            </Grid>
+            <StackPanel Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <DataGrid AutoGenerateColumns="False" 
+                          Name="GrdLignes" 
+                          HorizontalAlignment="Stretch" 
+                          VerticalAlignment="Stretch" 
+                          CanUserAddRows="False" 
+                          CanUserDeleteRows="False"
+                          ItemsSource="{Binding CmLignes, UpdateSourceTrigger=PropertyChanged}" 
+                          RowHeaderWidth="25">
+                    <DataGrid.RowValidationErrorTemplate>
+                        <ControlTemplate>
+                            <Grid Margin="0,-2,0,-2" ToolTip="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGridRow}}, Path=(Validation.Errors)[0].ErrorContent}">
+                                <Ellipse StrokeThickness="0" Fill="Red" Width="{TemplateBinding FontSize}" Height="{TemplateBinding FontSize}" />
+                                <TextBlock Text="!" FontSize="{TemplateBinding FontSize}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"  />
+                            </Grid>
+                        </ControlTemplate>
+                    </DataGrid.RowValidationErrorTemplate>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.Header>
+                                <CheckBox Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.ToggleCheckAll}" CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox Name="rowCheck" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding Path=RowChecked, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Ref Mag" Binding="{Binding Path=RefMag}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Nomenclature" Binding="{Binding Path=IsNomenclatureText}" IsReadOnly="True"/>
+                        <DataGridTextColumn 
+                            x:Name="RefFourn"
+                            Header="Ref Fourn"
+                            IsReadOnly="True"
+                            Binding="{Binding Path=RefFourn}"/>
+                        <DataGridTextColumn 
+                            x:Name="Design" 
+                            Header="Désignation" 
+                            IsReadOnly="True"
+                            Binding="{Binding Path=Design}"/>
+                        <DataGridTextColumn 
+                            Header="Qté Client" 
+                            CellStyle="{StaticResource QteStyle}"
+                            Binding="{Binding Path=Qte, StringFormat=N2, UpdateSourceTrigger=LostFocus, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}"/>
+                        <DataGridTextColumn 
+                            Header="Qté Stock" 
+                            CellStyle="{StaticResource QteStockStyle}" 
+                            Binding="{Binding Path=QteStock, StringFormat=N2, UpdateSourceTrigger=LostFocus, TargetNullValue='', ValidatesOnDataErrors=True, Converter={StaticResource DecimalConverter}}"/>
+                        <DataGridTextColumn
+                            Header="Unite"
+                            IsReadOnly="True"
+                            Binding="{Binding Path=Unite}"/>
+                        <DataGridTemplateColumn Header="Fournisseur">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding FournList}" 
+                                              SelectedItem="{Binding Path=SelectedFourn, UpdateSourceTrigger=PropertyChanged}" 
+                                              IsEnabled="{Binding Path=IsFournListEditable, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn 
+                            Header="Fourn princ" 
+                            CellStyle="{StaticResource FournPrincStyle}" 
+                            EditingElementStyle="{StaticResource CellEditStyle}" 
+                            Binding="{Binding Path=FournPrinc, ValidatesOnDataErrors=True, NotifyOnValidationError=True}"/>
+                        <DataGridTemplateColumn Header="Relier" IsReadOnly="True">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button x:Name="RelierBtn" Click="RelierBtn_Click" IsEnabled="{Binding Path=IsReliable}">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding LiaisonsTotal, UpdateSourceTrigger=PropertyChanged, StringFormat='Lier à ABC (\{0:N\} / '}"/>
+                                                <TextBlock Text="{Binding QteDispo, UpdateSourceTrigger=PropertyChanged, StringFormat='\{0:N\})'}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Button x:Name="ValiderBtn" Command="{Binding CommandValider}" Margin="0,10,0,0" IsEnabled="{Binding IsValid}">Valider</Button>
+                <TextBlock x:Name="logBox" IsEnabled="False" HorizontalAlignment="Stretch" Text="{Binding Path=LogText, NotifyOnTargetUpdated=True}" TargetUpdated="logBox_TargetUpdated" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

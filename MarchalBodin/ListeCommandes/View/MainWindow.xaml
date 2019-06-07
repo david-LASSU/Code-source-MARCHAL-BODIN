@@ -1,0 +1,383 @@
+﻿<Window x:Class="ListeCommandes.View.MainWindow" 
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:view="clr-namespace:ListeCommandes.View"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        xmlns:mbconverter="clr-namespace:MBCore.Converter;assembly=MBCore"
+        xmlns:mbcontrol="clr-namespace:MBCore.Control;assembly=MBCore"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="686" Width="1179"
+        DataContext="{StaticResource MainViewModel}" FontSize="15">
+    <Window.Resources>
+        <x:Array x:Key="DateLivPeriodeList" Type="system:String">
+            <system:String>----</system:String>
+            <system:String>Mois en cours</system:String>
+            <system:String>Année en cours</system:String>
+        </x:Array>
+        <x:Array x:Key="TousOuiNonList" Type="system:String">
+            <system:String>Tous</system:String>
+            <system:String>Oui</system:String>
+            <system:String>Non</system:String>
+        </x:Array>
+        <view:TypeToBrushConverter x:Key="TypeToBrushConverter" />
+        <view:StatutToBrushConverter x:Key="StatutToBrushConverter" />
+        <view:SumCommandesConverter x:Key="SumCommandesConverter" />
+        <view:AcheteurPrincConverter x:Key="AcheteurPrincConverter" />
+        <view:EmergencyToBrushConverter x:Key="EmergencyToBrushConverter"/>
+        <view:ReliquatTemplateSelector x:Key="ReliquatTemplateSelector"/>
+        <mbconverter:BoolToggleConverter x:Key="BoolToggleConverter"/>
+        <DataTemplate x:Key="ReliquatTemplate">
+            <Grid>
+                <Image Source="/Images/reliquat.png" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+        <Style TargetType="ListBoxItem">
+            <Style.Resources>
+                <!-- Background of selected item when focussed -->
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Green"/>
+                <!-- Background of selected item when not focussed -->
+                <!--<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="LightGreen" />-->
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey }" Color="LightGreen" />
+            </Style.Resources>
+        </Style>
+        <Style x:Key="DatagridCell" TargetType="TextBlock">
+            <Setter Property="Padding" Value="2"/>
+        </Style>
+        <Style x:Key="DocType" BasedOn="{StaticResource DatagridCell}" TargetType="TextBlock">
+            <Setter Property="Background" Value="{Binding Path=Type, Converter={StaticResource TypeToBrushConverter}}" />
+        </Style>
+        <Style x:Key="DocStatut" BasedOn="{StaticResource DatagridCell}" TargetType="{x:Type TextBlock}">
+            <Setter Property="Background" Value="{Binding Path=Statut, Converter={StaticResource StatutToBrushConverter}}" />
+        </Style>
+        <Style x:Key="DocPiece" BasedOn="{StaticResource DatagridCell}" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=Item, Converter={StaticResource ResourceKey=EmergencyToBrushConverter}}"/>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="0,10,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="195"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" x:Name="FournFiltreGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="125"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="205"/>
+                    <ColumnDefinition Width="95"/>
+                    <ColumnDefinition Width="165"/>
+                    <ColumnDefinition Width="65"/>
+                    <ColumnDefinition Width="240"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29"/>
+                    <RowDefinition Height="29*"/>
+                </Grid.RowDefinitions>
+                <!-- COLONNE A -->
+                <Label Grid.Column="0" Content="Période de livraison :"/>
+                <ComboBox Name="DateLivBox"
+                            ItemsSource="{StaticResource DateLivPeriodeList}"
+                            SelectedIndex="{Binding DateLivPeriode}" Grid.Column="1" Grid.Row="0" Margin="2"/>
+                <Label Grid.Column="0" Grid.Row="1" Content="Date de livraison de :" />
+                <DatePicker Grid.Column="1" Grid.Row="1" Margin="2" SelectedDate="{Binding DateLivFrom}"/>
+
+                <Label Grid.Column="0" Grid.Row="2" Content="à :" HorizontalContentAlignment="Right" />
+                <DatePicker Grid.Column="1" Grid.Row="2" Margin="2" SelectedDate="{Binding DateLivTo}" />
+
+                <Label Grid.Column="0" Grid.Row="3" Content="Collaborateur :" />
+                <ComboBox Name="Acheteur" Grid.Column="1" Grid.Row="3" Margin="2"
+                          ItemsSource="{Binding Collaborateurs}"
+                          SelectedValue="{Binding Collabo}"
+                          DisplayMemberPath="NomPrenom"/>
+
+                <!-- COLONNE B -->
+                <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" Width="49">Type :</Label>
+                <ListBox Name="DocTypeBox"
+                         ItemsSource="{Binding CommandeTypeList}"
+                         SelectedValuePath="Key"
+                         DisplayMemberPath="Value"
+                         SelectedIndex="0"
+                         SelectionChanged="DocTypeBox_OnSelectionChanged"
+                         Grid.Row="0" Grid.Column="3" Grid.RowSpan="5" SelectionMode="Extended">
+                </ListBox>
+
+                <!-- COLONNE C -->
+                <Label Grid.Row="0" Grid.Column="4" HorizontalAlignment="Right" Width="80">Type APC :</Label>
+                <ListBox Name="ApcTypeBox"
+                         ItemsSource="{Binding ApcTypeList}"
+                         DisplayMemberPath="Value"
+                         SelectionChanged="ApcTypeBox_SelectionChanged"
+                         SelectionMode="Extended"
+                         Grid.Row="0"
+                         Grid.RowSpan="4"
+                         Grid.Column="5">
+                </ListBox>
+
+                <!-- COLONNE E -->
+                <Label Grid.Row="0" Grid.Column="6" HorizontalAlignment="Right" Width="57">Statut :</Label>
+                <ListBox Name="DocStatutBox"
+                         ItemsSource="{Binding CommandeStatutList}"
+                         SelectedValuePath="Key"
+                         DisplayMemberPath="Value"
+                         SelectionChanged="DocStatutBox_OnSelectionChanged"
+                         Grid.Row="0" 
+                         Grid.Column="7" 
+                         SelectionMode="Extended" 
+                         SelectedIndex="0" 
+                         Grid.RowSpan="3">
+                </ListBox>
+                
+                <Label Grid.Column="0" Grid.Row="4" Content="Date doc depuis :" />
+                <DatePicker Grid.Column="1" Grid.Row="4" Margin="2" SelectedDate="{Binding DateDocFrom}"/>
+                <CheckBox x:Name="AutoLoadCheckBox" Grid.Row="4" Grid.Column="7" Content="Recharger toutes les 30 sec" IsEnabled="False" IsChecked="{Binding AutoReload}"/>
+                <Button Grid.Row="5" Grid.Column="7" Command="{Binding LoadDatasClick}">Valider / Recharger</Button>
+            </Grid>
+        </Grid>
+        <mbcontrol:AdornedControl Grid.Row="1" Name="LoadingAdorner" IsAdornerVisible="{Binding Loading}">
+            <mbcontrol:AdornedControl.AdornerContent>
+                <mbcontrol:LoadingWait></mbcontrol:LoadingWait>
+            </mbcontrol:AdornedControl.AdornerContent>
+            <TabControl VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionChanged="TabControl_SelectionChanged">
+                <TabItem x:Name="AllTab" Header="Tout">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="27"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Button Content="++" VerticalAlignment="Bottom" Width="25" Height="25" Click="ExpandAll_OnClick" CommandParameter="{Binding Name, ElementName=AllDatagrid}"/>
+                            <Button Content="--" VerticalAlignment="Bottom" Width="25" Height="25" Margin="0" Click="CollapseAll_OnClick" CommandParameter="{Binding Name, ElementName=AllDatagrid}"/>
+                            <TextBlock FontWeight="Bold" Text="Total HT :" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            <TextBlock FontWeight="Bold" Text="{Binding TotalCommandes, StringFormat=C, ConverterCulture=fr-FR}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <DataGrid x:Name="AllDatagrid" 
+                                      HorizontalAlignment="Stretch" 
+                                      VerticalAlignment="Stretch" 
+                                      Margin="0,0,0,0"
+                                      Grid.Row="1" 
+                                      Width="Auto" 
+                                      Height="Auto" 
+                                      AutoGenerateColumns="False" 
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False" 
+                                      ItemsSource="{Binding Commandes}" IsReadOnly="True"
+                                      ScrollViewer.CanContentScroll="True"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                      RowHeaderWidth="55" 
+                                      SelectionMode="Single" 
+                                      SelectionUnit="Cell" 
+                                      IsEnabled="{Binding Loading, Converter={StaticResource BoolToggleConverter}}">
+                            <DataGrid.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.ContainerStyle>
+                                        <Style TargetType="{x:Type GroupItem}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                        <Expander Background="LightGray" IsExpanded="False" Padding="3">
+                                                            <Expander.Header>
+                                                                <StackPanel Orientation="Horizontal" ToolTip="Clic droit pour voir la fiche fournisseur">
+                                                                    <StackPanel.InputBindings>
+                                                                        <MouseBinding Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenFournRightClick}"
+                                                                                            MouseAction="RightClick"
+                                                                                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}}"/>
+                                                                    </StackPanel.InputBindings>
+                                                                    <TextBlock Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=EmergencyToBrushConverter}}" 
+                                                                                    Text="{Binding Path=Name}" Padding="0,0,5,0" FontWeight="Bold" Width="300"></TextBlock>
+                                                                    <TextBlock Text="{Binding Path=ItemCount, StringFormat= '\{0\} commande(s)'}" Padding="0,0,5,0" Width="150"/>
+                                                                    <TextBlock Padding="0,0,5,0" Name="TotalHT" FontWeight="Bold" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=SumCommandesConverter}}" Width="170"/>
+                                                                    <TextBlock FontSize="12" Padding="0,0,5,0" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=AcheteurPrincConverter}}" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Expander.Header>
+                                                            <ItemsPresenter />
+                                                        </Expander>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </GroupStyle.ContainerStyle>
+                                </GroupStyle>
+                            </DataGrid.GroupStyle>
+                            <DataGrid.InputBindings>
+                                <MouseBinding MouseAction="LeftDoubleClick" 
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenAbcDoubleCLick}" 
+                                                    CommandParameter="{Binding SelectedCells, ElementName=AllDatagrid}"/>
+                            </DataGrid.InputBindings>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Reliquat" CellTemplateSelector="{StaticResource ReliquatTemplateSelector}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocPiece}" Header="Pièce Achat" Binding="{Binding Path=Piece}" FontWeight="Bold"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocType}" Header="Type" Binding="{Binding Path=TypeLabel}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocStatut}" Header="Statut" Binding="{Binding Path=StatutLabel}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Référence" Binding="{Binding Path=DoRef}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date Statut" Binding="{Binding Path=DateStatut, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="InterMag" Binding="{Binding Path=MagFourn}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Contremarque" Binding="{Binding Path=TotalCm}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Montant HT" Binding="{Binding Path=TotalHT, StringFormat=C, ConverterCulture=fr-FR}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date de création" Binding="{Binding Path=Date, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date de livraison" Binding="{Binding Path=DateLivraison, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Num Fourn" Binding="{Binding Path=CtNum}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Collaborateur" Binding="{Binding Path=Collaborateur}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Entête 1" Binding="{Binding Path=Entete1}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="CmTab" Header="Avec Contremarque">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="27"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <Button Content="++" VerticalAlignment="Bottom" Width="25" Click="ExpandAll_OnClick" CommandParameter="{Binding Name, ElementName=CmDatagrid}" />
+                                <Button Content="--" VerticalAlignment="Bottom" Width="25" Margin="0" Click="CollapseAll_OnClick" CommandParameter="{Binding Name, ElementName=CmDatagrid}"/>
+                                <TextBlock FontWeight="Bold" Text="Total HT :" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock FontWeight="Bold" Text="{Binding TotalCmCommandes, StringFormat=C, ConverterCulture=fr-FR}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </StackPanel>
+                            <DataGrid x:Name="CmDatagrid"
+                                      HorizontalAlignment="Stretch" 
+                                      VerticalContentAlignment="Stretch" 
+                                      Margin="0,0,0,0"
+                                      Grid.Row="1" 
+                                      Width="Auto" 
+                                      Height="Auto" 
+                                      AutoGenerateColumns="False" 
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False" 
+                                      ItemsSource="{Binding CmCommandes, UpdateSourceTrigger=PropertyChanged}" 
+                                      IsReadOnly="True"
+                                      RowDetailsVisibilityMode="VisibleWhenSelected" 
+                                      RowHeaderWidth="25" 
+                                      SelectionMode="Single">
+                                <DataGrid.GroupStyle>
+                                    <GroupStyle>
+                                        <GroupStyle.ContainerStyle>
+                                            <Style TargetType="{x:Type GroupItem}">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                            <Expander Background="LightGray" IsExpanded="False" Padding="3">
+                                                                <Expander.Header>
+                                                                    <StackPanel Orientation="Horizontal" ToolTip="Clic droit pour voir la fiche fournisseur">
+                                                                        <StackPanel.InputBindings>
+                                                                            <MouseBinding Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenFournRightClick}"
+                                                                                            MouseAction="RightClick"
+                                                                                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}}"/>
+                                                                        </StackPanel.InputBindings>
+                                                                        <TextBlock Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=EmergencyToBrushConverter}}" 
+                                                                                    Text="{Binding Path=Name}" Padding="0,0,5,0" FontWeight="Bold" Width="300"></TextBlock>
+                                                                        <TextBlock Text="{Binding Path=ItemCount, StringFormat= '\{0\} commande(s)'}" Padding="0,0,5,0" Width="150"/>
+                                                                        <TextBlock Padding="0,0,5,0" Name="TotalHT" FontWeight="Bold" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=SumCommandesConverter}}" Width="170"/>
+                                                                        <TextBlock FontSize="12" Padding="0,0,5,0" Text="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupItem}}, Converter={StaticResource ResourceKey=AcheteurPrincConverter}}" VerticalAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </Expander.Header>
+                                                                <ItemsPresenter />
+                                                            </Expander>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </GroupStyle.ContainerStyle>
+                                    </GroupStyle>
+                                </DataGrid.GroupStyle>
+                                <DataGrid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenAbcDoubleCLick}" CommandParameter="{Binding SelectedItem, ElementName=CmDatagrid}"/>
+                                </DataGrid.InputBindings>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Reliquat" CellTemplateSelector="{StaticResource ReliquatTemplateSelector}"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Pièce Achat" Binding="{Binding Path=Piece}" FontWeight="Bold"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource DocType}" Header="Type" Binding="{Binding Path=TypeLabel}"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource DocStatut}" Header="Statut" Binding="{Binding Path=StatutLabel}"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date Statut" Binding="{Binding Path=DateStatut, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                    <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Montant HT" Binding="{Binding Path=TotalHT, StringFormat=C, ConverterCulture=fr-FR}"/>
+                                </DataGrid.Columns>
+                                <DataGrid.RowDetailsTemplate>
+                                    <DataTemplate>
+                                        <DataGrid Name="grdVBC"  RowHeaderWidth="25" ItemsSource="{Binding Path=Lignes}" AutoGenerateColumns="False" Margin="0" CanUserAddRows="False" 
+                                        CanUserDeleteRows="False" IsReadOnly="True">
+                                            <DataGrid.InputBindings>
+                                                <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenVbcDoubleCLick}" CommandParameter="{Binding ElementName=grdVBC, Path=SelectedItem}"/>
+                                            </DataGrid.InputBindings>
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Acheteur" Binding="{Binding Path=Acheteur}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Pièce" Binding="{Binding Path=Piece}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date Statut" Binding="{Binding Path=DateStatut, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Client" Binding="{Binding Path=Client}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Ref" Binding="{Binding Path=ArRef}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Ref Fourn" Binding="{Binding Path=RefFourn}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Designation" Binding="{Binding Path=Designation}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Qte CM" Binding="{Binding Path=CmQte}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Qte Cli" Binding="{Binding Path=CliQte}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Montant HT" Binding="{Binding Path=TotalHT, StringFormat=C, ConverterCulture=fr-FR}"/>
+                                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Vendeur" Binding="{Binding Path=Vendeur}"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DataTemplate>
+                                </DataGrid.RowDetailsTemplate>
+                            </DataGrid>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem x:Name="RecepTab" Header="Réception">
+                    <Grid>
+                        <DataGrid x:Name="RecepDatagrid"
+                                  HorizontalAlignment="Stretch" 
+                                  VerticalAlignment="Stretch" 
+                                  Margin="0,0,0,0"
+                                  Width="Auto" 
+                                  Height="Auto" 
+                                  AutoGenerateColumns="False" 
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False" 
+                                  ItemsSource="{Binding RecepCommandes}"
+                                  IsReadOnly="True"
+                                  ScrollViewer.CanContentScroll="True"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                  RowHeaderWidth="55" 
+                                  SelectionMode="Single" 
+                                  SelectionUnit="Cell" 
+                                  IsEnabled="{Binding Loading, Converter={StaticResource BoolToggleConverter}}">
+                            <DataGrid.InputBindings>
+                                <MouseBinding MouseAction="LeftDoubleClick" 
+                                                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.OpenAbcDoubleCLick}" 
+                                                    CommandParameter="{Binding SelectedCells, ElementName=RecepDatagrid}"/>
+                            </DataGrid.InputBindings>
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Header="Reliquat" CellTemplateSelector="{StaticResource ReliquatTemplateSelector}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocPiece}" Header="Pièce Achat" Binding="{Binding Path=Piece}" FontWeight="Bold"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocType}" Header="Type" Binding="{Binding Path=TypeLabel}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DocStatut}" Header="Statut" Binding="{Binding Path=StatutLabel}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Référence" Binding="{Binding Path=DoRef}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="InterMag" Binding="{Binding Path=MagFourn}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Contremarque" Binding="{Binding Path=TotalCm}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Montant HT" Binding="{Binding Path=TotalHT, StringFormat=C, ConverterCulture=fr-FR}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date de création" Binding="{Binding Path=Date, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Date de livraison" Binding="{Binding Path=DateLivraison, StringFormat=\{0:dd.MM.yyyy\}}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Num Fourn" Binding="{Binding Path=CtNum}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Fourn" Binding="{Binding Path=Fournisseur}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Collaborateur" Binding="{Binding Path=Collaborateur}"/>
+                                <DataGridTextColumn ElementStyle="{StaticResource DatagridCell}" Header="Entête 1" Binding="{Binding Path=Entete1}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </mbcontrol:AdornedControl>
+    </Grid>
+</Window>
